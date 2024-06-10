@@ -92,4 +92,17 @@ print(pbp_passing_season_length)
 
 
 # Display the results
-print(pbp_passing_season_length[["pass_length_air_yards", "passer", "season", "YPA", "YPA_last"]].query('passer == "P.Mahomes" | passer == "A.Rodgers"').sort_values(["passer", "pass_length_air_yards", "season"]).to_string())
+# print(pbp_passing_season_length[["pass_length_air_yards", "passer", "season", "YPA", "YPA_last"]].query('passer == "P.Mahomes" | passer == "A.Rodgers"').sort_values(["passer", "pass_length_air_yards", "season"]).to_string())
+print(len(pbp_passing_season_length.passer_id.unique()))
+
+
+# # Scatterplot of YPA vs YPA_last
+# sns.lmplot(data=pbp_passing_season_length, x="YPA", y="YPA_last", col="pass_length_air_yards")
+# plt.show()
+
+# # Correlation of YPA and YPA_last
+# print(pbp_passing_season_length.query('YPA.notnull() & YPA.notnull()').groupby('pass_length_air_yards')[['YPA', 'YPA_last']].corr())
+
+## 2017 leaderboard
+print(pbp_passing_season_length.query('pass_length_air_yards == "long" & season == 2017')[["passer_id", "passer", "YPA"]].sort_values(by="YPA", ascending=False).head(10))
+print(pbp_passing_season_length.query('pass_length_air_yards == "long" & season == 2018')[["passer_id", "passer", "YPA"]].sort_values(by="YPA", ascending=False).head(10))
