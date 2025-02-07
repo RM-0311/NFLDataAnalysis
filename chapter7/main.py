@@ -44,8 +44,27 @@ draft_chart.columns = list(map("_".join, draft_chart.columns))
 draft_chart.loc[draft_chart.DrAV_mean.isnull()] = 0
 draft_chart["roll_DrAV"] = (
   draft_chart["DrAV_mean"]
-  .rolling(window=13)
+  .rolling(window=13, min_periods=1, center=True)
   .mean()
   )
-sns.scatterplot(draft_chart, x="Pick", y="roll_DrAV", color="red")
-plt.show()
+# sns.scatterplot(draft_chart, x="Pick", y="roll_DrAV", color="red")
+draft_chart.reset_index(inplace=True)
+draft_chart["roll_DrAV_log"] = np.log(draft_chart["roll_DrAV"] + 1)
+
+DrAV_pick_fit = smf.ols(formula="roll_DrAV_log ~ Pick", data=draft_chart).fit()
+
+draft_chart["fitted_DrAV"] = np.exp(DrAV_pick_fit.predict()) - 1
+
+draft_use_pre2020 = draft_use_pre2020.merge(draft_chart[["Pick", "fitted_DrAV"]], on="Pick")
+draft_use_pre2020["OE"] = (draft_use_pre2020["DrAV"] - draft_use_pre2020["fitted_DrAV"])
+draft_use_pre2020.groupby("Tm").agg({"OE": ["count", "mean", "std"]}).reset_index().sort_values(("OE", "mean"), ascending=False)
+
+draft_use_pre2020 = draft_use_pre2020.merge(draft_chart[["Pick", "fitted_DrAV"]], on="Pick")
+draft_use_pre2020_tm = draft_use_pre2020.groupby("Tm").agg({"OE": ["count", "mean", "std"]}).reset_index().sort_values(("OE", "mean"), ascending=False)
+draft_use_pre2020_tm.columns = list(map("_".join, draft_use_pre2020_tm.columns))
+draft_use_pre2020_tm.reset_index(inplace=True)
+draft_use_pre2020_tm["se"] = (draft_use_pre2020_tm["OE_std"] / np.sqrt(draft_use_pre2020_tm["OE_count"]))
+draft_use_pre2020_tm["lower bound"] = draft_use_pre2020_tm["OE_mean"] - 1.96 * draft_use_pre2020_tm["se"]
+draft_use_pre2020_tm["upper bound"] = draft_use_pre2020_tm["OE_mean"] + 1.96 * draft_use_pre2020_tm["se"]
+
+print(draft_use_pre2020_tm)
