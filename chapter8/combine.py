@@ -31,4 +31,13 @@ combine = combine.astype({
 combine["Ht"] = (combine["Ht_ft"] * 12.0 + combine["Ht_in"])
 
 combine.drop(["Ht_ft", "Ht_in"], axis=1, inplace=True)
-print(combine.describe())
+
+sns.set_theme(style="whitegrid", palette="colorblind")
+# sns.regplot(data=combine, x="Ht", y="Wt")
+
+# sns.regplot(data=combine, x="Wt", y="40yd", line_kws={"color": "red"})
+# sns.regplot(data=combine, x="40yd", y="Vertical", line_kws={"color": "red"})
+sns.regplot(data=combine, x="40yd", y="3Cone", line_kws={"color": "red"})
+
+
+plt.show()
